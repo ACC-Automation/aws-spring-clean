@@ -1,0 +1,10 @@
+version = 0.1
+[default.deploy.parameters]
+stack_name = "Termination-CF"
+resolve_s3 = true
+s3_prefix = "Termination-CF"
+region = "ap-south-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "DynamodbName=\"AWS-Service-List\" S3BucketNameReport=\"aws-scan-service-bucket-272218102380\" S3BucketName=\"aws-lambda-fn-bucket-272218102380\" SNSEmail=\"vn2699@gmail.com\""
+image_repositories = []
