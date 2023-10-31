@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-#Description: 
+Description: Daily Resource Deleteion for unwanted spending 
 Parameters:
   DynamodbName:
     Type: String
@@ -10,10 +10,10 @@ Parameters:
     Type: String
     Default: "aws-scan-service-bucket-${AWS::AccountId}"
     Description: Name of the s3 bucket name for storing csv files
-  S3BucketName:
-    Type: String
-    Default: "aws-lambda-fn-bucket-${AWS::AccountId}"
-    Description: Name of the s3 bucket name for storing lambda fn
+  #S3BucketName:
+    #Type: String
+    #Default: "aws-lambda-fn-bucket-${AWS::AccountId}"
+    #Description: Name of the s3 bucket name for storing lambda fn
   SNSEmail:
     Type: String
     Default: "abc@example.com"
