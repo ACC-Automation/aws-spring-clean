@@ -255,7 +255,7 @@ Resources:
         IgnorePublicAcls: TRUE
         RestrictPublicBuckets: TRUE
       VersioningConfiguration:
-        Status: Suspended
+        Status: "Suspended"
       Tags:
         - Key: Retain
           Value: "True"
