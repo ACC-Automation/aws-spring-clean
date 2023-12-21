@@ -201,7 +201,17 @@ delete_functions = {
     'AWS::SecretsManager::ResourcePolicy': {
         'list': 'get_resource_policy',
         'delete': 'delete_resource_policy'
+    },
+    
+    'AWS::CodePipeline::Pipeline': {
+        'list': 'get_Pipeline',
+        'delete': 'delete_pipeline'
+    },
+    'AWS::CodePipeline::Webhook': {
+        'list': 'get_Webhook',
+        'delete': 'delete_webhook'
     }
+    
     #'AWS::SecretsManager::SecretTargetAttachment': {},
 }
 

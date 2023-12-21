@@ -7,6 +7,7 @@ from fsx import fsx
 from secretsmanager import secretsmanager
 from kinesis import kinesis
 from autoscaling import autoscaling
+from codepipeline import codepipeline
 from botocore.exceptions import ClientError
 
 class checker:
@@ -179,6 +180,18 @@ class checker:
                                 csv_writer.writerow(self.item)
                         return status #continue
                     elif service_to_find == 'mediaconvert':
+                        if status == 'true':
+                            self.table.delete_item(
+                                Key={'resourceId': self.resourceId_value, 'resourceType': self.resourceType_value}
+                            )
+                            with open(self.csv_file_path, 'w', newline='') as csv_file:
+                                csv_writer = csv.DictWriter(csv_file, fieldnames=['resourceType', 'awsRegion', 'resourceId', 'resourceName', 'resource_status', 'configurationItemStatus', 'time_of_crud_past_18'])
+                                csv_writer.writeheader()
+                                csv_writer.writerow(self.item)
+                        return status #continue
+                    elif service_to_find == 'codepipeline':
+                        e = codepipeline(self.resourceType_value, self.awsRegion_value, self.resourceName_value, self.delete_functions)
+                        status = e.delete_action()
                         if status == 'true':
                             self.table.delete_item(
                                 Key={'resourceId': self.resourceId_value, 'resourceType': self.resourceType_value}
