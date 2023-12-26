@@ -5,12 +5,17 @@ from ec2 import ec2
 from efs import efs
 from fsx import fsx
 from secretsmanager import secretsmanager
+from glue import glue
 from kinesis import kinesis
 from autoscaling import autoscaling
 from botocore.exceptions import ClientError
 
 class checker:
     def __init__(self, item, delete_functions, bucket_name, sns_topic_arn, ddb_table_name):
+        print("******* initializing for item *************")
+        print(item)
+        print("******* initializing for item *************")
+
         self.item = item
         self.delete_functions = delete_functions
         self.bucket_name = bucket_name
@@ -20,7 +25,7 @@ class checker:
         self.object_key = f'delete/{self.curr_date}-deleted.csv'
         self.s3_url = f'https://{self.bucket_name}.s3.amazonaws.com/{self.object_key}'
         #self.ec2 = boto3.client('ec2')
-        dynamodb = boto3.resource('dynamodb', region_name='ap-south-1')
+        dynamodb = boto3.resource('dynamodb', region_name='ap-northeast-1')
         #ddb_table_name = 'AWS-Service-List'
         self.s3 = boto3.client('s3')
         self.sns = boto3.client('sns')
@@ -74,7 +79,7 @@ class checker:
                         service_to_find = "unknown"
                         print("Input string does not have at least 3 elements")
                     
-                    print(service_to_find)
+                    print(f"service_to_find: {service_to_find}")
                         
                     if service_to_find == 'ec2':
                         print(self.resourceType_value)
@@ -167,7 +172,7 @@ class checker:
                         return status #continue
                     elif service_to_find == 'secretsmanager':
                         print(self.resourceType_value)
-                        s = secretsmanager(self.resourceType_value, self.awsRegion_value, self.resourceName_value, sedelete_functions)
+                        s = secretsmanager(self.resourceType_value, self.awsRegion_value, self.resourceName_value, self.delete_functions)
                         status = s.delete_action()
                         if status == 'true':
                             self.table.delete_item(
@@ -178,6 +183,22 @@ class checker:
                                 csv_writer.writeheader()
                                 csv_writer.writerow(self.item)
                         return status #continue
+                    
+                    elif service_to_find == 'glue':
+                        print("executing for glue table ....")
+                        print(self.resourceType_value)
+                        s = glue(self.resourceType_value, self.awsRegion_value, self.resourceName_value, self.delete_functions)
+                        status = s.delete_action()
+                        if status == 'true':
+                            self.table.delete_item(
+                                Key={'resourceId': self.resourceId_value, 'resourceType': self.resourceType_value}
+                            )
+                            with open(self.csv_file_path, 'w', newline='') as csv_file:
+                                csv_writer = csv.DictWriter(csv_file, fieldnames=['resourceType', 'awsRegion', 'resourceId', 'resourceName', 'resource_status', 'configurationItemStatus', 'time_of_crud_past_18'])
+                                csv_writer.writeheader()
+                                csv_writer.writerow(self.item)
+                        return status #continue
+                    
                     elif service_to_find == 'mediaconvert':
                         if status == 'true':
                             self.table.delete_item(
