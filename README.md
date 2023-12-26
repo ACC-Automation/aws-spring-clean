@@ -46,3 +46,14 @@ Follow through the mentioned steps and fill out appropriate Parameters:
 ![image](./images/CF-Console.png)
 
 **Enjoy!!!**
+
+
+Service not supported by AWS Config
+- API Gateway authorizers, resources, and methods
+- Cognito user pools
+- ECS tasks
+- EKS node groups
+- IAM managed policies
+- ALB/NLB target groups
+- EC2 Spot Instances
+- EC2 Spot Fleet requests
