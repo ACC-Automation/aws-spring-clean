@@ -28,6 +28,14 @@ def lambda_handler(event, context):
     #AWS_SERVICE_CLIENT = get_client(services[i], event)
     resourceType = event['detail']['configurationItem']['resourceType']
     tags = event['detail']['configurationItem']['tags']
+    region = event['region']
+
+    if region != 'ap-northeast-1':
+        print(f"not supported region for testing resourceType: {resourceType}")
+        return {
+        'statusCode': 404,
+        'body': 'not supported region for testing'
+    }
     #print(tags)
     
     # Given dictionary
@@ -65,7 +73,7 @@ def lambda_handler(event, context):
         'configurationItemStatus': configurationItemStatus,
         'time_of_crud_past_18': time_to_update
     }
-    dynamodb = boto3.resource('dynamodb', region_name='ap-south-1')
+    dynamodb = boto3.resource('dynamodb', region_name='ap-northeast-1')
     table = dynamodb.Table(table_name)
     response = table.get_item(Key={'resourceId': insert_data['resourceId'], 'resourceType': insert_data['resourceType']})
     #print(response)

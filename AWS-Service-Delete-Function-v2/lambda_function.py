@@ -8,7 +8,7 @@ from botocore.exceptions import ClientError
 #from ec2 import ec2
 from checker import checker
 
-dynamodb = boto3.resource('dynamodb', region_name='ap-south-1')
+dynamodb = boto3.resource('dynamodb', region_name='ap-northeast-1')
 #ddb_table_name = 'AWS-Service-List'
 ddb_table_name = os.environ['TABLE_NAME']
 #client_cc_api = boto3.client('cloudcontrol')
@@ -201,8 +201,11 @@ delete_functions = {
     'AWS::SecretsManager::ResourcePolicy': {
         'list': 'get_resource_policy',
         'delete': 'delete_resource_policy'
-    }
+    },
     #'AWS::SecretsManager::SecretTargetAttachment': {},
+    'AWS::Glue::Job':{
+        'list':'get_table',
+        'delete':'delete_table'}
 }
 
 def lambda_handler(event, context):
@@ -222,10 +225,11 @@ def lambda_handler(event, context):
     print(curr_date)
     #bucket_name = 'aws-security-automation'
     bucket_name = os.environ['BUCKET_NAME']
-    #sns_topic_arn = 'arn:aws:sns:ap-south-1:268500393272:AWS_Resource_Status'
+    #sns_topic_arn = 'arn:aws:sns:ap-northeast-1:268500393272:AWS_Resource_Status'
     sns_topic_arn = os.environ['SNS_ARN']
     s3 = boto3.client('s3')
     sns = boto3.client('sns')
+    print(f"current_time_ist.hour: {current_time_ist.hour}")
     #if 18 <= current_time_ist.hour < 24 or 0 <= current_time_ist.hour < 6:
     if 18 <= current_time_ist.hour < 24:
     #if 18 <= 2 < 24:
@@ -260,6 +264,7 @@ def lambda_handler(event, context):
             Subject=f'Resource Deletion Reminder for {curr_date}'
         )
     else:
+        print("executing else part...")
         csv_file_path = f'/tmp/{curr_date}-deleted.csv'
         with open(csv_file_path, 'w', newline='') as csv_file:
             csv_writer = csv.DictWriter(csv_file, fieldnames=['resourceType', 'awsRegion', 'resourceId', 'resourceName', 'resource_status', 'configurationItemStatus', 'time_of_crud_past_18'])
@@ -267,7 +272,11 @@ def lambda_handler(event, context):
         object_key = f'delete/{curr_date}-deleted.csv'
         s3_url = f'https://{bucket_name}.s3.amazonaws.com/{object_key}'
         for item in items:
-            print(item)
+            print(item, type(item))
+            # testing
+            if "Glue" not in item['resourceType']:
+                continue
+
             if item['time_of_crud_past_18'] == 'true':
                 print(f"Skipping this item resourceType: {item['resourceType']} and resourceName: {item['resourceName']}")
                 table.update_item(
