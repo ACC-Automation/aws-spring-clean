@@ -7,6 +7,10 @@ from fsx import fsx
 from secretsmanager import secretsmanager
 from kinesis import kinesis
 from autoscaling import autoscaling
+from codepipeline import codepipeline 
+from sqs import sqs
+from mediapackage import mediapackage
+from kms import kms
 from botocore.exceptions import ClientError
 
 class checker:
@@ -20,7 +24,7 @@ class checker:
         self.object_key = f'delete/{self.curr_date}-deleted.csv'
         self.s3_url = f'https://{self.bucket_name}.s3.amazonaws.com/{self.object_key}'
         #self.ec2 = boto3.client('ec2')
-        dynamodb = boto3.resource('dynamodb', region_name='ap-south-1')
+        dynamodb = boto3.resource('dynamodb', region_name='ap-northeast-2')
         #ddb_table_name = 'AWS-Service-List'
         self.s3 = boto3.client('s3')
         self.sns = boto3.client('sns')
@@ -188,14 +192,81 @@ class checker:
                                 csv_writer.writeheader()
                                 csv_writer.writerow(self.item)
                         return status #continue
+                    elif service_to_find == 'codepipeline':
+                        e = codepipeline(self.resourceType_value, self.awsRegion_value, self.resourceName_value, self.delete_functions)
+                        status = e.delete_action()
+                        if status == 'true':
+                            self.table.delete_item(
+                                Key={'resourceId': self.resourceId_value, 'resourceType': self.resourceType_value}
+                            )
+                            with open(self.csv_file_path, 'w', newline='') as csv_file:
+                                csv_writer = csv.DictWriter(csv_file, fieldnames=['resourceType', 'awsRegion', 'resourceId', 'resourceName', 'resource_status', 'configurationItemStatus', 'time_of_crud_past_18'])
+                                csv_writer.writeheader()
+                                csv_writer.writerow(self.item)
+                        return status #continue
                     else:
                         status = 'true'
                         print(f"Resource type: {self.resourceType_value}, currently not supported. Ref 1")
                         return status #continue
+            elif type_supp['ProvisioningType'] == 'FULLY_MUTABLE'or type_supp['ProvisioningType'] == 'IMMUTABLE':
+                print(f"{self.resourceType_value} and {type_supp['ProvisioningType']}")
+                #for self.resourceType_value in delete_functions.keys():
+                if self.delete_functions[self.resourceType_value]:
+                    elements = self.resourceType_value.split("::")
+                    if len(elements) >= 3:
+                        service_to_find = elements[1].lower()
+                    else:
+                        service_to_find = "unknown"
+                        print("Input string does not have at least 3 elements")
+                    
+                    print("service to find222222222222 ---------------",service_to_find)
+                    if service_to_find == 'sqs':
+                            e = sqs(self.resourceType_value, self.awsRegion_value, self.resourceName_value, self.delete_functions)
+                            status = e.delete_action()
+                            if status == 'true':
+                                self.table.delete_item(
+                                    Key={'resourceId': self.resourceId_value, 'resourceType': self.resourceType_value}
+                                )
+                                print("Item deleted successfully SQS")
+                                with open(self.csv_file_path, 'w', newline='') as csv_file:
+                                    csv_writer = csv.DictWriter(csv_file, fieldnames=['resourceType', 'awsRegion', 'resourceId', 'resourceName', 'resource_status', 'configurationItemStatus', 'time_of_crud_past_18'])
+                                    csv_writer.writeheader()
+                                    csv_writer.writerow(self.item)
+                            return status #continue
+                    elif service_to_find == 'mediapackage':
+                        e = mediapackage(self.resourceType_value, self.awsRegion_value, self.resourceName_value, self.delete_functions)
+                        status = e.delete_action()
+                        if status == 'true':
+                            self.table.delete_item(
+                                Key={'resourceId': self.resourceId_value, 'resourceType': self.resourceType_value}
+                            )
+                            print("Item deleted successfully Media pacakge")
+                            with open(self.csv_file_path, 'w', newline='') as csv_file:
+                                csv_writer = csv.DictWriter(csv_file, fieldnames=['resourceType', 'awsRegion', 'resourceId', 'resourceName', 'resource_status', 'configurationItemStatus', 'time_of_crud_past_18'])
+                                csv_writer.writeheader()
+                                csv_writer.writerow(self.item)
+                        return status #continue
+                    elif service_to_find == 'kms':
+                        e = kms(self.resourceType_value, self.awsRegion_value, self.resourceName_value, self.delete_functions)
+                        status = e.delete_action()
+                        if status == 'true':
+                            self.table.delete_item(
+                                Key={'resourceId': self.resourceId_value, 'resourceType': self.resourceType_value}
+                            )
+                            print("Item deleted successfully KMS")
+                            with open(self.csv_file_path, 'w', newline='') as csv_file:
+                                csv_writer = csv.DictWriter(csv_file, fieldnames=['resourceType', 'awsRegion', 'resourceId', 'resourceName', 'resource_status', 'configurationItemStatus', 'time_of_crud_past_18'])
+                                csv_writer.writeheader()
+                                csv_writer.writerow(self.item)
+                        return status #continue
+                    else:
+                            status = 'true'
+                            print(f"Resource type: {self.resourceType_value}, currently not supported. Ref 3")
+                            return status #continue
             else:
                 print(f"Resource type: {self.resourceType_value} and status: {self.status_value}, supported in delete_cloudcontrol_api. Ref 2")
-                status = self.delete_cloudcontrol_api()
-                print(f"status:{status} for delete_cloudcontrol_api ref ")
+                # status = self.delete_cloudcontrol_api()
+                # print(f"status:{status} for delete_cloudcontrol_api ref ")
                 return status #continue
         else:
             #status = 'true'
