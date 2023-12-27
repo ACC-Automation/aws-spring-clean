@@ -8,7 +8,7 @@ from botocore.exceptions import ClientError
 #from ec2 import ec2
 from checker import checker
 
-dynamodb = boto3.resource('dynamodb', region_name='ap-south-1')
+dynamodb = boto3.resource('dynamodb', region_name='ap-northeast-2')
 #ddb_table_name = 'AWS-Service-List'
 ddb_table_name = os.environ['TABLE_NAME']
 #client_cc_api = boto3.client('cloudcontrol')
@@ -201,6 +201,39 @@ delete_functions = {
     'AWS::SecretsManager::ResourcePolicy': {
         'list': 'get_resource_policy',
         'delete': 'delete_resource_policy'
+    },
+    
+    'AWS::CodePipeline::Pipeline': {
+        'list': 'get_Pipeline',
+        'delete': 'delete_pipeline'
+    },
+    'AWS::CodePipeline::Webhook': {
+        'list': 'get_Webhook',
+        'delete': 'delete_webhook'
+    },
+    'AWS::SQS::Queue': {
+        'list': 'get_queue_to_be_deleted',
+        'delete': 'delete_queue'
+    },
+    'AWS::MediaPackage::PackagingGroup': {
+        'list': 'Packaging groups',
+        'delete': 'delete_packaging_groups'
+    },
+    'AWS::MediaPackage::PackagingConfiguration': {
+        'list': 'PackagingConfiguration',
+        'delete': 'delete_packaging_Configuration'
+    },
+    'AWS::SNS::Topic': {
+        'list': 'SNS_topic_deletion',
+        'delete': 'delete_sns_topic'
+    },
+    'AWS::KMS::Key': {
+        'list': 'decypt the kms key',
+        'delete': 'delete_kms_key'
+    },
+     'AWS::KMS::Alias': {
+        'list': 'decypt Alias',
+        'delete': 'delete_Alias'
     }
     #'AWS::SecretsManager::SecretTargetAttachment': {},
 }
